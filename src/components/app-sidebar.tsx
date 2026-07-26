@@ -1,115 +1,181 @@
-import {
-    Archive,
-    ChevronDown,
-    Home,
-    Settings,
-    User2,
-    Users,
-} from "lucide-react";
-import { Link } from "react-router-dom";
+import { NavMain } from "@/components/nav-main";
+// import { NavProjects } from "@/components/nav-projects"
+import { NavUser } from "@/components/nav-user";
+// import { TeamSwitcher } from "@/components/team-switcher";
 import {
     Sidebar,
     SidebarContent,
     SidebarFooter,
-    SidebarGroup,
-    SidebarGroupContent,
-    SidebarGroupLabel,
     SidebarHeader,
-    SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
-    SidebarTrigger,
+    useSidebar,
 } from "@/components/ui/sidebar";
-import { t } from "@/lib/t";
-import { AnimatedThemeToggler } from "./ui/animated-theme-toggler";
+import {
+    GalleryVerticalEndIcon,
+    AudioLinesIcon,
+    TerminalIcon,
+    TerminalSquareIcon,
+    BotIcon,
+    BookOpenIcon,
+    Settings2Icon,
+    FrameIcon,
+    PieChartIcon,
+    MapIcon,
+    PanelLeftOpen,
+    PanelRightOpen,
+} from "lucide-react";
+import { Collapsible, CollapsibleTrigger } from "./ui/collapsible";
 
-import { useTheme } from "./theme-provider";
+// This is sample data.
+const data = {
+    user: {
+        name: "mahdi najafzadeh",
+        email: "mahdi.najafzadeh@partsoftware.com",
+        avatar: "https://chat.partcorp.ir/avatar/mahdi.najafzadeh",
+    },
+    teams: [
+        {
+            name: "Acme Inc",
+            logo: <GalleryVerticalEndIcon />,
+            plan: "Enterprise",
+        },
+        {
+            name: "Acme Corp.",
+            logo: <AudioLinesIcon />,
+            plan: "Startup",
+        },
+        {
+            name: "Evil Corp.",
+            logo: <TerminalIcon />,
+            plan: "Free",
+        },
+    ],
+    navMain: [
+        {
+            title: "Playground",
+            url: "#",
+            icon: <TerminalSquareIcon />,
+            isActive: true,
+            items: [
+                {
+                    title: "History",
+                    url: "#",
+                },
+                {
+                    title: "Starred",
+                    url: "#",
+                },
+                {
+                    title: "Settings",
+                    url: "#",
+                },
+            ],
+        },
+        {
+            title: "Models",
+            url: "#",
+            icon: <BotIcon />,
+            items: [
+                {
+                    title: "Genesis",
+                    url: "#",
+                },
+                {
+                    title: "Explorer",
+                    url: "#",
+                },
+                {
+                    title: "Quantum",
+                    url: "#",
+                },
+            ],
+        },
+        {
+            title: "Documentation",
+            url: "#",
+            icon: <BookOpenIcon />,
+            items: [
+                {
+                    title: "Introduction",
+                    url: "#",
+                },
+                {
+                    title: "Get Started",
+                    url: "#",
+                },
+                {
+                    title: "Tutorials",
+                    url: "#",
+                },
+                {
+                    title: "Changelog",
+                    url: "#",
+                },
+            ],
+        },
+        {
+            title: "Settings",
+            url: "#",
+            icon: <Settings2Icon />,
+            items: [
+                {
+                    title: "General",
+                    url: "#",
+                },
+                {
+                    title: "Team",
+                    url: "#",
+                },
+                {
+                    title: "Billing",
+                    url: "#",
+                },
+                {
+                    title: "Limits",
+                    url: "#",
+                },
+            ],
+        },
+    ],
+    projects: [
+        {
+            name: "Design Engineering",
+            url: "#",
+            icon: <FrameIcon />,
+        },
+        {
+            name: "Sales & Marketing",
+            url: "#",
+            icon: <PieChartIcon />,
+        },
+        {
+            name: "Travel",
+            url: "#",
+            icon: <MapIcon />,
+        },
+    ],
+};
 
-export function AppSidebar() {
-    const { setTheme, theme } = useTheme();
+export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+    const { open, toggleSidebar } = useSidebar();
     return (
-        <Sidebar variant="inset" collapsible="icon">
-            <SidebarHeader className="flex justify-center-safe items-center-safe">
-                <SidebarMenu>
-                    <SidebarMenuItem>
-                        <SidebarTrigger />
-                    </SidebarMenuItem>
-                </SidebarMenu>
+        <Sidebar collapsible="icon" variant="floating" {...props}>
+            <SidebarHeader>
+                <Collapsible render={<SidebarMenuItem />}>
+                    <CollapsibleTrigger
+                        render={<SidebarMenuButton onClick={toggleSidebar} />}
+                    >
+                        {open ? <PanelRightOpen /> : <PanelLeftOpen />}
+                        <span>collapse</span>
+                    </CollapsibleTrigger>
+                </Collapsible>
             </SidebarHeader>
             <SidebarContent>
-                <SidebarGroup>
-                    <SidebarGroupLabel>
-                        {t("sidebar.header.menu.title")}
-                    </SidebarGroupLabel>
-                    <SidebarGroupContent>
-                        <SidebarMenu>
-                            {Array.from({ length: 20 }).map((_, idx) => {
-                                return (
-                                    <SidebarMenuItem key={idx.toString()}>
-                                        <Link to="/">
-                                            <SidebarMenuButton>
-                                                <Home />
-                                                <span>
-                                                    {t(
-                                                        "sidebar.content.home.text",
-                                                    )}
-                                                </span>
-                                            </SidebarMenuButton>
-                                        </Link>
-                                    </SidebarMenuItem>
-                                );
-                            })}
-                            <SidebarMenuItem>
-                                <Link to="/users">
-                                    <SidebarMenuButton>
-                                        <Users />
-                                        <span>
-                                            {t("sidebar.content.users.text")}
-                                        </span>
-                                    </SidebarMenuButton>
-                                </Link>
-                            </SidebarMenuItem>
-                        </SidebarMenu>
-                    </SidebarGroupContent>
-                </SidebarGroup>
-                <SidebarGroup>
-                    <SidebarGroupLabel>
-                        {t("sidebar.content.settings.title")}
-                    </SidebarGroupLabel>
-                    <SidebarGroupContent>
-                        <SidebarMenu>
-                            <SidebarMenuItem>
-                                <Link to="/settings">
-                                    <SidebarMenuButton>
-                                        <Settings />
-                                        <span>
-                                            {t("sidebar.content.settings.text")}
-                                        </span>
-                                    </SidebarMenuButton>
-                                </Link>
-                            </SidebarMenuItem>
-                        </SidebarMenu>
-                    </SidebarGroupContent>
-                </SidebarGroup>
+                <NavMain items={data.navMain} />
             </SidebarContent>
             <SidebarFooter>
-                <SidebarMenu>
-                    <SidebarMenuItem>
-                        <SidebarMenuButton>
-                            <AnimatedThemeToggler
-                                duration={750}
-                                theme={theme as any}
-                                onThemeChange={setTheme}
-                            />
-                            {theme}
-                        </SidebarMenuButton>
-                    </SidebarMenuItem>
-                    <SidebarMenuItem>
-                        <SidebarMenuButton>
-                            <User2 /> Username
-                        </SidebarMenuButton>
-                    </SidebarMenuItem>
-                </SidebarMenu>
+                <NavUser user={data.user} />
             </SidebarFooter>
         </Sidebar>
     );
