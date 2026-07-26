@@ -22,3 +22,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# ai tools
+.agents
+.claude
+.opencode
+openspec
+
