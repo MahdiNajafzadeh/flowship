@@ -8,7 +8,7 @@ export default function Main() {
         <>
             <SidebarProvider
                 defaultOpen={true}
-                className="min-w-screen min-h-screen"
+                className="w-screen h-screen"
             >
                 <AppSidebar />
                 <main className="w-full h-full">
