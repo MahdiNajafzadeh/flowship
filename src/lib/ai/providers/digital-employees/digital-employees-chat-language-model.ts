@@ -91,7 +91,7 @@ export class DigitalEmployeesChatLanguageModel implements LanguageModelV4 {
         const response = await (this.config.fetch ?? globalThis.fetch)(url, {
             method: "POST",
             headers,
-            body: JSON.stringify({ ...body, project_id: '6' }),
+            body: JSON.stringify({ ...body, project_id: "6" }),
             signal: options.abortSignal,
         });
 
@@ -271,8 +271,7 @@ export class DigitalEmployeesChatLanguageModel implements LanguageModelV4 {
 
                         for (const line of lines) {
                             const trimmed = line.trim();
-                            if (!trimmed || !trimmed.startsWith("data: "))
-                                continue;
+                            if (!trimmed?.startsWith?.("data: ")) continue;
 
                             const payload = trimmed.slice(6);
                             if (payload === "[DONE]") {
