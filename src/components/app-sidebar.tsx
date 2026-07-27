@@ -8,7 +8,6 @@ import {
     SidebarFooter,
     SidebarHeader,
     SidebarMenuButton,
-    SidebarMenuItem,
     useSidebar,
 } from "@/components/ui/sidebar";
 import {
@@ -24,8 +23,8 @@ import {
     MapIcon,
     PanelLeftOpen,
     PanelRightOpen,
+    User,
 } from "lucide-react";
-import { Collapsible, CollapsibleTrigger } from "./ui/collapsible";
 
 // This is sample data.
 const data = {
@@ -160,16 +159,15 @@ const data = {
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     const { open, toggleSidebar } = useSidebar();
     return (
-        <Sidebar collapsible="icon" variant="floating" {...props}>
+        <Sidebar variant="floating" collapsible="icon" {...props}>
             <SidebarHeader>
-                <Collapsible render={<SidebarMenuItem />}>
-                    <CollapsibleTrigger
-                        render={<SidebarMenuButton onClick={toggleSidebar} />}
-                    >
-                        {open ? <PanelRightOpen /> : <PanelLeftOpen />}
-                        <span>collapse</span>
-                    </CollapsibleTrigger>
-                </Collapsible>
+                <SidebarMenuButton>
+                    <User />
+                </SidebarMenuButton>
+                <SidebarMenuButton onClick={toggleSidebar}>
+                    {open ? <PanelRightOpen /> : <PanelLeftOpen />}
+                    <span>collapse</span>
+                </SidebarMenuButton>
             </SidebarHeader>
             <SidebarContent>
                 <NavMain items={data.navMain} />
