@@ -23,7 +23,8 @@ export function createDigitalEmployees(
 		});
 
 	const provider = Object.assign(
-		(modelId: string, settings?: DigitalEmployeesChatSettings) => createChatModel(modelId, settings),
+		(modelId: string, settings?: DigitalEmployeesChatSettings) =>
+			createChatModel(modelId, settings),
 		{
 			specificationVersion: "v4" as const,
 			languageModel: createChatModel,

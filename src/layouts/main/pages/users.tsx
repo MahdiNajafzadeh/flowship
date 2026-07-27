@@ -1,3 +1,3 @@
 export default function Users() {
-    return <>Users</>;
+	return <>Users</>;
 }
