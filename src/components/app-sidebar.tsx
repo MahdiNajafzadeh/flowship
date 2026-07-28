@@ -1,7 +1,5 @@
 import { NavMain } from "@/components/nav-main";
-// import { NavProjects } from "@/components/nav-projects"
 import { NavUser } from "@/components/nav-user";
-// import { TeamSwitcher } from "@/components/team-switcher";
 import {
 	Sidebar,
 	SidebarContent,
@@ -161,9 +159,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 	return (
 		<Sidebar variant="floating" collapsible="icon" {...props}>
 			<SidebarHeader>
-				<SidebarMenuButton>
-					<User />
-				</SidebarMenuButton>
 				<SidebarMenuButton onClick={toggleSidebar}>
 					{open ? <PanelRightOpen /> : <PanelLeftOpen />}
 					<span>collapse</span>
