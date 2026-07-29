@@ -9,6 +9,8 @@ import type {
 	LanguageModelV4TextPart,
 	LanguageModelV4ToolCallPart,
 	LanguageModelV4ToolResultPart,
+	LanguageModelV4ToolCall,
+	LanguageModelV4ToolResult,
 	SharedV4Warning,
 	LanguageModelV4Usage,
 } from "@ai-sdk/provider";
@@ -247,7 +249,8 @@ export class DigitalEmployeesChatLanguageModel implements LanguageModelV4 {
 		let hasStartedText = false;
 		let reasoningId = generateId();
 		let hasStartedReasoning = false;
-		const toolCallMap = new Map<number, ToolCallState>();
+			const toolCallMap = new Map<number, ToolCallState>();
+		let toolCallsSeen = false;
 
 		return new ReadableStream<LanguageModelV4StreamPart>({
 			async start(controller) {
@@ -287,6 +290,7 @@ export class DigitalEmployeesChatLanguageModel implements LanguageModelV4 {
 										type: "text-end",
 										id: textId,
 									});
+									hasStartedText = false;
 								}
 								if (responseId || responseModel) {
 									controller.enqueue({
@@ -316,11 +320,48 @@ export class DigitalEmployeesChatLanguageModel implements LanguageModelV4 {
 							}
 
 							if (parsed.agentic_event) {
+								const ae =
+									typeof parsed.agentic_event === "object" &&
+									parsed.agentic_event !== null
+										? (parsed.agentic_event as Record<
+												string,
+												unknown
+											>)
+										: parsed;
+
+								const toolCallId = (
+									ae.tool_call_id ?? ae.toolCallId ?? ""
+								) as string;
+								const hasResult =
+									ae.result !== undefined ||
+									ae.output !== undefined ||
+									ae.data !== undefined;
+
+								if (toolCallId && hasResult) {
+									const toolName = (
+										ae.tool_name ??
+										ae.toolName ??
+										"unknown"
+									) as string;
+									const resultValue =
+										ae.result ?? ae.output ?? ae.data ?? {};
+
+									const toolResult: LanguageModelV4ToolResult = {
+										type: "tool-result",
+										toolCallId,
+										toolName,
+										result: resultValue,
+										isError: false,
+									};
+									controller.enqueue(toolResult);
+								}
+
 								continue;
 							}
 
-							if (parsed.id && !responseId) {
+							if (parsed.id && (!responseId || toolCallsSeen)) {
 								responseId = parsed.id as string;
+								if (toolCallsSeen) toolCallsSeen = false;
 							}
 							if (parsed.model && !responseModel) {
 								responseModel = parsed.model as string;
@@ -346,50 +387,51 @@ export class DigitalEmployeesChatLanguageModel implements LanguageModelV4 {
 								| string
 								| undefined;
 
-							if (
-								delta.content &&
-								typeof delta.content === "string"
-							) {
-								if (
-									delta.content.length > 0 &&
-									hasStartedReasoning
-								) {
-									controller.enqueue({
-										type: "reasoning-end",
-										id: reasoningId,
-									});
-									hasStartedReasoning = false;
-								}
-								if (!hasStartedText) {
-									controller.enqueue({
-										type: "text-start",
-										id: textId,
-									});
-									hasStartedText = true;
-								}
-								controller.enqueue({
-									type: "text-delta",
-									id: textId,
-									delta: delta.content,
-								});
-							}
+							const hasToolCalls = !!delta.tool_calls;
 
-							if (
-								delta.reasoning_content &&
-								typeof delta.reasoning_content === "string"
-							) {
-								if (!hasStartedReasoning) {
+							if (!hasToolCalls) {
+								const hasContent =
+									typeof delta.content === "string" &&
+									delta.content.length > 0;
+								const hasReasoning =
+									typeof delta.reasoning_content ===
+										"string" &&
+									delta.reasoning_content.length > 0;
+
+								if (hasReasoning) {
+									if (!hasStartedReasoning) {
+										controller.enqueue({
+											type: "reasoning-start",
+											id: reasoningId,
+										});
+										hasStartedReasoning = true;
+									}
 									controller.enqueue({
-										type: "reasoning-start",
+										type: "reasoning-delta",
 										id: reasoningId,
+										delta: delta.reasoning_content,
 									});
-									hasStartedReasoning = true;
+								} else if (hasContent) {
+									if (hasStartedReasoning) {
+										controller.enqueue({
+											type: "reasoning-end",
+											id: reasoningId,
+										});
+										hasStartedReasoning = false;
+									}
+									if (!hasStartedText) {
+										controller.enqueue({
+											type: "text-start",
+											id: textId,
+										});
+										hasStartedText = true;
+									}
+									controller.enqueue({
+										type: "text-delta",
+										id: textId,
+										delta: delta.content,
+									});
 								}
-								controller.enqueue({
-									type: "reasoning-delta",
-									id: reasoningId,
-									delta: delta.reasoning_content,
-								});
 							}
 
 							if (delta.tool_calls) {
@@ -414,37 +456,25 @@ export class DigitalEmployeesChatLanguageModel implements LanguageModelV4 {
 											name: toolName,
 											args: "",
 										});
-										controller.enqueue({
-											type: "tool-input-start",
-											id: toolId,
-											toolName,
-										});
 									}
 
 									const state = toolCallMap.get(idx)!;
 									if (tc.function?.arguments) {
 										state.args += tc.function.arguments;
-										controller.enqueue({
-											type: "tool-input-delta",
-											id: state.id,
-											delta: tc.function.arguments,
-										});
 									}
 								}
 							}
 
 							if (finishReason === "tool_calls") {
-								for (const [, tc] of toolCallMap) {
-									controller.enqueue({
-										type: "tool-input-end",
-										id: tc.id,
-									});
-									controller.enqueue({
+								for (const [_, state] of toolCallMap) {
+									const toolCall: LanguageModelV4ToolCall = {
 										type: "tool-call",
-										toolCallId: tc.id,
-										toolName: tc.name,
-										input: tc.args,
-									});
+										toolCallId: state.id,
+										toolName: state.name,
+										input: state.args,
+										providerExecuted: true,
+									};
+									controller.enqueue(toolCall);
 								}
 								toolCallMap.clear();
 
@@ -460,11 +490,11 @@ export class DigitalEmployeesChatLanguageModel implements LanguageModelV4 {
 										type: "text-end",
 										id: textId,
 									});
+									hasStartedText = false;
 								}
 								textId = generateId();
-								hasStartedText = false;
 								reasoningId = generateId();
-								hasStartedReasoning = false;
+								toolCallsSeen = true;
 
 								if (responseId || responseModel) {
 									controller.enqueue({
@@ -493,6 +523,7 @@ export class DigitalEmployeesChatLanguageModel implements LanguageModelV4 {
 										type: "text-end",
 										id: textId,
 									});
+									hasStartedText = false;
 								}
 
 								if (responseId || responseModel) {
