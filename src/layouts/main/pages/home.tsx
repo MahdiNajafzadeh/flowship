@@ -65,12 +65,15 @@ const Message = React.memo(({ message }: { message: UIMessage }) => {
                             <ToolCallingPart key={`message-${message.id}/${part.type}/${i.toString()}`} {...part} />
                         ),
                     )
+                    .with({ type: "dynamic-tool" }, (part: any) => (
+                        <ToolCallingPart key={`message-${message.id}/${part.type}/${i.toString()}`} {...part} type={part.toolName} />
+                    ))
                     .otherwise(() => null),
             ),
         [message.id, message.parts],
     );
     return (
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-1" color={message.role === "user" ? "red" : undefined}>
             <div className="flex flex-col gap-3 text-sm">{renderedParts}</div>
         </div>
     );
@@ -87,7 +90,7 @@ export default function Home(props: React.HTMLAttributes<HTMLDivElement>) {
                         <MessageScrollerViewport>
                             <MessageScrollerContent className="pt-4 pb-16">
                                 {messages.map((message) => (
-                                    <MessageScrollerItem key={message.id}>
+                                    <MessageScrollerItem key={message.id} messageId={message.id}>
                                         <Message message={message} />
                                     </MessageScrollerItem>
                                 ))}
