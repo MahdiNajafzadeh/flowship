@@ -18,10 +18,9 @@ import { createDigitalEmployees } from "@/lib/ai/providers/digital-employees";
 import { useRef, useMemo } from "react";
 import { cn } from "@/lib/utils";
 
-const chat = createChat();
-
 const random = () => Math.floor(Math.random() * 50);
 const randomText = () => loremIpsum({ count: random() });
+const chat = createChat();
 Array
     //
     .from({ length: 5 })
@@ -48,39 +47,40 @@ const agent = new ToolLoopAgent({
     } as any,
 });
 
-const MessageItem = React.memo(
-    ({ message }: { message: any }) => {
-        const renderedParts = useMemo(() => {
-            return message.parts.map((part: any, i: number) => {
-                const key = `message-${message.id}-[${part.type}]-${i}`;
-                return match(part)
+const Message = React.memo(({ message }: { message: UIMessage }) => {
+    const renderedParts = useMemo(
+        () =>
+            message.parts.map((part, i: number) =>
+                match(part)
                     .returnType<React.ReactNode>()
-                    .with({ type: "text" }, (part) => <TextPart key={key} {...part} />)
-                    .with({ type: "reasoning" }, (part: any) => <ReasoningPart key={key} {...part} />)
+                    .with({ type: "text" }, (part) => (
+                        <TextPart key={`message-${message.id}/${part.type}/${i.toString()}`} {...part} />
+                    ))
+                    .with({ type: "reasoning" }, (part) => (
+                        <ReasoningPart key={`message-${message.id}/${part.type}/${i.toString()}`} {...part} />
+                    ))
                     .when(
                         (v) => v.type.startsWith("tool-"),
-                        (part: any) => <ToolCallingPart key={key} {...part} />,
+                        (part: any) => (
+                            <ToolCallingPart key={`message-${message.id}/${part.type}/${i.toString()}`} {...part} />
+                        ),
                     )
-                    .otherwise(() => null);
-            });
-        }, [message.id, message.parts]);
-        return (
-            <div className="flex flex-col gap-1">
-                <div className="flex flex-col gap-3 text-sm">{renderedParts}</div>
-            </div>
-        );
-    },
-    (p, n) => p.message.id === n.message.id && p.message.parts === n.message.parts,
-);
+                    .otherwise(() => null),
+            ),
+        [message.id, message.parts],
+    );
+    return (
+        <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-3 text-sm">{renderedParts}</div>
+        </div>
+    );
+});
 
 export default function Home(props: React.HTMLAttributes<HTMLDivElement>) {
     const transport = useRef(new DirectChatTransport({ agent }));
-    const { messages, sendMessage, status } = useChat({
-        transport: transport.current,
-    });
-
+    const { sendMessage, messages, status } = useChat({ transport: transport.current });
     return (
-        <div {...props} className={cn(props.className, "flex flex-col items-center w-full h-full mx-auto")}>
+        <div {...props} className={cn(props.className, "flex flex-col w-3/5 h-full mx-auto")}>
             <MessageScrollerProvider autoScroll={true}>
                 <div className="flex-1 min-h-0 flex flex-col">
                     <MessageScroller className="flex-1">
@@ -88,7 +88,7 @@ export default function Home(props: React.HTMLAttributes<HTMLDivElement>) {
                             <MessageScrollerContent className="pt-4 pb-16">
                                 {messages.map((message) => (
                                     <MessageScrollerItem key={message.id}>
-                                        <MessageItem message={message} />
+                                        <Message message={message} />
                                     </MessageScrollerItem>
                                 ))}
                             </MessageScrollerContent>
@@ -99,7 +99,7 @@ export default function Home(props: React.HTMLAttributes<HTMLDivElement>) {
             </MessageScrollerProvider>
 
             <PromptInput
-                className="flex-none w-3/5 max-w-3xl mt-2"
+                className="flex-none mt-2"
                 disabled={status === "submitted" || status === "streaming"}
                 onSend={(text) => void sendMessage({ text })}
             />
