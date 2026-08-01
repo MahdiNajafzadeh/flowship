@@ -10,7 +10,7 @@ import {
     MessageScrollerButton,
 } from "@/components/ui/message-scroller";
 import PromptInput from "@/components/prompt-input";
-import { TextPart, ToolCallingPart, ReasoningPart } from "@/components/chat";
+import { TextPart, ToolCallingPart, ReasoningPart, TranscriptOutline, getMessageLabel } from "@/components/chat";
 import { createChat } from "@shadcn/helpers/ai-sdk";
 import { loremIpsum } from "lorem-ipsum";
 import { ToolLoopAgent, DirectChatTransport, type UIMessage } from "ai";
@@ -86,13 +86,23 @@ const Message = React.memo(({ message }: { message: UIMessage }) => {
 export default function Home(props: React.HTMLAttributes<HTMLDivElement>) {
     const transport = useRef(new DirectChatTransport({ agent }));
     const { sendMessage, messages, status } = useChat({ transport: transport.current });
+    const turns = useMemo(
+        () =>
+            messages
+                .filter((message) => message.role === "user")
+                .map((message) => ({
+                    id: message.id,
+                    label: getMessageLabel(message),
+                })),
+        [messages],
+    );
     return (
-        <div {...props} className={cn(props.className, "flex flex-col w-3/5 h-full mx-auto")}>
+        <div {...props} className={cn(props.className, "flex flex-col items-center w-11/12 h-full mx-auto")}>
             <MessageScrollerProvider autoScroll={true}>
-                <div className="flex-1 min-h-0 flex flex-col">
-                    <MessageScroller className="flex-1">
+                <div className="relative flex-1 min-h-0 flex flex-col items-center">
+                    <MessageScroller className="flex-1 w-3/5">
                         <MessageScrollerViewport>
-                            <MessageScrollerContent className="pt-4 pb-16">
+                            <MessageScrollerContent className="pt-4 pb-16 w-11/12">
                                 {messages.map((message) => (
                                     <MessageScrollerItem
                                         key={message.id}
@@ -106,11 +116,12 @@ export default function Home(props: React.HTMLAttributes<HTMLDivElement>) {
                         </MessageScrollerViewport>
                         <MessageScrollerButton />
                     </MessageScroller>
+                    <TranscriptOutline turns={turns} />
                 </div>
             </MessageScrollerProvider>
 
             <PromptInput
-                className="flex-none mt-2"
+                className="flex-none mt-2 w-3/5"
                 disabled={status === "submitted" || status === "streaming"}
                 onSend={(text) => void sendMessage({ text })}
             />
