@@ -23,6 +23,9 @@ export function NavUser() {
     if (isError) {
         return <>{String(error)}</>;
     }
+    if (!isSuccess || !profile) {
+        return null;
+    }
     const fit = (profile.name as unknown as string)
         .split(".")
         .map((v) => v.at(0))
@@ -30,63 +33,57 @@ export function NavUser() {
         .join("")
         .toUpperCase();
     return (
-        isSuccess && (
-            <SidebarMenu>
-                <SidebarMenuItem>
-                    <DropdownMenu>
-                        <DropdownMenuTrigger
-                            render={<SidebarMenuButton size="lg" className="aria-expanded:bg-muted" />}
-                        >
-                            <Avatar>
-                                <AvatarImage src={`/api/profile/avatar/${profile?.name}`} />
-                                <AvatarFallback>{fit}</AvatarFallback>
-                            </Avatar>
-                            <div className="grid flex-1 text-start text-sm leading-tight">
-                                <span className="truncate font-medium">{profile.name}</span>
-                                <span className="truncate text-xs">{profile.name}@partsoftware.com</span>
-                            </div>
-                            <ChevronsUpDownIcon className="ms-auto size-4" />
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent
-                            className="w-fit"
-                            side={isMobile ? "bottom" : "right"}
-                            align="end"
-                            sideOffset={4}
-                        >
-                            <DropdownMenuGroup>
-                                <DropdownMenuLabel className="p-0 font-normal">
-                                    <div className="flex items-center gap-2 px-1 py-1.5 text-start text-sm">
-                                        <Avatar>
-                                            <AvatarImage src={profile.name} alt={profile.name} />
-                                            <AvatarFallback>CN</AvatarFallback>
-                                        </Avatar>
-                                        <div className="grid flex-1 text-start text-sm leading-tight">
-                                            <span className="truncate font-medium">{profile.name}</span>
-                                            <span className="truncate text-xs">{profile.name}@partsoftware.com</span>
-                                        </div>
+        <SidebarMenu>
+            <SidebarMenuItem>
+                <DropdownMenu>
+                    <DropdownMenuTrigger render={<SidebarMenuButton size="lg" className="aria-expanded:bg-muted" />}>
+                        <Avatar>
+                            <AvatarImage src={"/api/profile/avatar"} alt="@avater" />
+                            <AvatarFallback>{fit}</AvatarFallback>
+                        </Avatar>
+                        <div className="grid flex-1 text-start text-sm leading-tight">
+                            <span className="truncate font-medium">{profile.name}</span>
+                        </div>
+                        <ChevronsUpDownIcon className="ms-auto size-4" />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent
+                        className="w-fit"
+                        side={isMobile ? "bottom" : "right"}
+                        align="end"
+                        sideOffset={4}
+                    >
+                        <DropdownMenuGroup>
+                            <DropdownMenuLabel className="p-0 font-normal">
+                                <div className="flex items-center gap-2 px-1 py-1.5 text-start text-sm">
+                                    <Avatar>
+                                        <AvatarImage src={"/api/profile/avatar"} alt="@avater" />
+                                        <AvatarFallback>{fit}</AvatarFallback>
+                                    </Avatar>
+                                    <div className="grid flex-1 text-start text-sm leading-tight">
+                                        <span className="truncate font-medium">{profile.name}</span>
                                     </div>
-                                </DropdownMenuLabel>
-                            </DropdownMenuGroup>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuGroup>
-                                <DropdownMenuItem>
-                                    <BadgeCheckIcon />
-                                    Account
-                                </DropdownMenuItem>
-                                <DropdownMenuItem>
-                                    <BellIcon />
-                                    Notifications
-                                </DropdownMenuItem>
-                            </DropdownMenuGroup>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={logout}>
-                                <LogOutIcon />
-                                Log out
+                                </div>
+                            </DropdownMenuLabel>
+                        </DropdownMenuGroup>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuGroup>
+                            <DropdownMenuItem>
+                                <BadgeCheckIcon />
+                                Account
                             </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </SidebarMenuItem>
-            </SidebarMenu>
-        )
+                            <DropdownMenuItem>
+                                <BellIcon />
+                                Notifications
+                            </DropdownMenuItem>
+                        </DropdownMenuGroup>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={logout}>
+                            <LogOutIcon />
+                            Log out
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </SidebarMenuItem>
+        </SidebarMenu>
     );
 }

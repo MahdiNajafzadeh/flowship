@@ -2,8 +2,10 @@ import { api } from "@/lib/api";
 import { useMutation } from "@tanstack/react-query";
 import type { HTTPError } from "ky";
 import { useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 
 export function useAuth() {
+    const navigate = useNavigate();
     const {
         mutate: loginMutate,
         isSuccess,
@@ -25,10 +27,14 @@ export function useAuth() {
         [loginMutate, reset],
     );
 
-    const logout = useCallback(async () => {
-        await api.post("/auth/logout");
-        reset();
-    }, [reset]);
+    const logout = useCallback(
+        () =>
+            api
+                .post("/auth/logout")
+                .then(() => reset())
+                .then(() => navigate("/auth/login")),
+        [reset, navigate],
+    );
 
     return {
         login,
