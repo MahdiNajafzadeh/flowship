@@ -66,7 +66,11 @@ const Message = React.memo(({ message }: { message: UIMessage }) => {
                         ),
                     )
                     .with({ type: "dynamic-tool" }, (part: any) => (
-                        <ToolCallingPart key={`message-${message.id}/${part.type}/${i.toString()}`} {...part} type={part.toolName} />
+                        <ToolCallingPart
+                            key={`message-${message.id}/${part.type}/${i.toString()}`}
+                            {...part}
+                            type={part.toolName}
+                        />
                     ))
                     .otherwise(() => null),
             ),
@@ -90,7 +94,11 @@ export default function Home(props: React.HTMLAttributes<HTMLDivElement>) {
                         <MessageScrollerViewport>
                             <MessageScrollerContent className="pt-4 pb-16">
                                 {messages.map((message) => (
-                                    <MessageScrollerItem key={message.id} messageId={message.id}>
+                                    <MessageScrollerItem
+                                        key={message.id}
+                                        messageId={message.id}
+                                        scrollAnchor={message.role === "user"}
+                                    >
                                         <Message message={message} />
                                     </MessageScrollerItem>
                                 ))}
