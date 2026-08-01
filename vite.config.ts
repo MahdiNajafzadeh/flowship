@@ -8,7 +8,7 @@ export default defineConfig({
     plugins: [react(), tailwindcss()],
     resolve: {
         alias: {
-            "@": path.resolve(__dirname, "./src"),
+            "@": path.resolve(import.meta.dirname, "./src"),
         },
     },
     server: {
@@ -23,8 +23,8 @@ export default defineConfig({
                         console.log(`< ${proxyReq.method} ${proxyReq.path}`);
                         proxyReq.setHeader("X-API-KEY", "sk-xVdzUjVAnIaNLEeBm0iRdOBca7jj0iSCB5AGR4f2T70");
                     });
-                    proxy.on("proxyRes", (proxyReq, req, res) => {
-                        console.log(`> ${proxyReq.method} ${proxyReq.path} ${res.statusCode}`);
+                    proxy.on("proxyRes", (proxyReq, _req, res) => {
+                        console.log(`> ${proxyReq.method} ${proxyReq.url} ${res.statusCode}`);
                     });
                 },
             },
@@ -35,8 +35,8 @@ export default defineConfig({
                     proxy.on("proxyReq", (proxyReq) => {
                         console.log(`< ${proxyReq.method} ${proxyReq.path}`);
                     });
-                    proxy.on("proxyRes", (proxyReq, req, res) => {
-                        console.log(`> ${proxyReq.method} ${proxyReq.path} ${res.statusCode}`);
+                    proxy.on("proxyRes", (proxyReq, _req, res) => {
+                        console.log(`> ${proxyReq.method} ${proxyReq.url} ${res.statusCode}`);
                     });
                 },
             },
